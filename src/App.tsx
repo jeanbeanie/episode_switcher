@@ -51,19 +51,21 @@ interface ISeason {
   premiereDate: string,
   episodes: IEpisode[],
 }
+const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
+const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
+const defaultEpisode : IEpisode = {id:0, seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
+const showName = "girls" // TODO
 
 function App() {
-  const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
-  const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
-  const defaultEpisode : IEpisode = {id:0, seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
   const [show, setShow] = useState(defaultShow);
   const [seasons, setSeasons] = useState([defaultSeason]);
   const [episodes, setEpisodes] = useState([[defaultEpisode]]);
-
+  const [seasonIsLoaded, setSeasonIsLoaded] = useState(false);
+  
   useEffect(() => {
-    const showName = "girls" // TODO
-    
+    const episodeState:IEpisode[][] = [];
 
+    // SINGLE SHOW DETAILS
     async function fetchShowData () {
       const showResult = await axios(returnShowEndpoint(showName));
       const fetchedShow = showResult.data[0].show;
@@ -76,23 +78,49 @@ function App() {
         imageURL: image.medium,
       }
       setShow(showState);
-      const seasonsResult = await axios(returnSeasonsEndpoint(showState.id));
-      const fetchedSeasons = seasonsResult.data;
-      const seasonIds: number[] = [];
-      const seasons = fetchedSeasons.map((season: IRawSeason) => {
-        seasonIds.push(season.id);
-        return {
-          id: season.id,
-          number: season.number,
-          premiereDate: season.premiereDate,
-          numEpisodes: season.episodeOrder,
-        }
-      });
+
+    // SEASONS DETAILS
+    const seasonsResult = await axios(returnSeasonsEndpoint(showState.id));
+    const fetchedSeasons = seasonsResult.data;
+    const seasonIds: number[] = [];
+    const seasons = fetchedSeasons.map((season: IRawSeason) => {
+      seasonIds.push(season.id);
+      return {
+        id: season.id,
+        number: season.number,
+        premiereDate: season.premiereDate,
+        numEpisodes: season.episodeOrder,
+      }
+    });
       setSeasons(seasons);
+      setSeasonIsLoaded(true);
+    }
+
+    // EPISODES DATA
+    //
+    async function fetchEpisodesBySeason (seasonId: number) {
+      const episodesResult = await axios(returnEpisodesEndpoint(seasonId));
+      const fetchedEpisodes = episodesResult.data.map((episode:IRawEpisode): IEpisode => {
+        return { name: episode.name, seasonNumber: episode.season, episodeNumber:episode.number, id: episode.id, summary: episode.summary, imageURL: episode.image.medium  }
+      });
+      
+      episodeState.push([fetchedEpisodes])
+      setEpisodes(episodeState);
+    }
+
+
+    const buildEpisodeList = () => {
+      return [seasons.map((season: ISeason) => {
+        const seasonEpisodes = fetchEpisodesBySeason(season.id);
+        return seasonEpisodes;
+      })]
     }
 
     fetchShowData();
-  },[]);
+    if(seasonIsLoaded){
+      buildEpisodeList();
+    }
+  },[seasonIsLoaded]);
   
   console.log('Show STATE', show)
   console.log('Seasons STATE', seasons)
@@ -100,15 +128,18 @@ function App() {
   const {name, summary, premiereDate, imageURL} = show;
   return (
     <div className="App">
+
       <h1>{name}</h1>
       <h2>Premiered on {premiereDate}</h2>
       <img src={imageURL} alt={`${name} cover`}/>
       <p>{summary}</p>
+
       {
           seasons.map((season) =>
             <>
-          <h1>Season {season.number}</h1>
-          <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
+              <h1>Season {season.number}</h1>
+              <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
+              <hr/>
             </>
         )
       }
