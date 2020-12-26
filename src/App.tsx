@@ -138,25 +138,25 @@ function App() {
       <p>{summary}</p>
 
       {
-          seasons.map((season) => {
-            const episodesIndex = episodes.findIndex((ep) => ep[0].seasonNumber === season.number)
-            return (<>
-              <h1>Season {season.number}</h1>
-              <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
-              <hr/>
-                { 
-                  episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
-                    return( 
-                      <>
-                      <div>{episode.name}</div>
-                      <div>Season {episode.seasonNumber} | Episode {episode.episodeNumber} | {episode.premiereDate}</div>
-                      <img src={episode.imageURL}/>
-                      <div>{episode.summary}</div>
-                      </>
-                    )
-                  })
-                }
-              </>);
+        seasons.map((season) => {
+          const episodesIndex = episodes.findIndex((ep) => ep[0].seasonNumber === season.number)
+          return (<>
+            <h1>Season {season.number}</h1>
+            <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
+            <hr/>
+              { 
+                episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
+                  return( 
+                    <>
+                    <div>{episode.name}</div>
+                    <div>Season {episode.seasonNumber} | Episode {episode.episodeNumber} | {episode.premiereDate}</div>
+                    <img src={episode.imageURL} alt={`${episode.seasonNumber}-${episode.episodeNumber}-cover`}/>
+                    <div>{episode.summary}</div>
+                    </>
+                  )
+                })
+              }
+            </>);
           }
         )
       }
