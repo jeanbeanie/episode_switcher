@@ -19,16 +19,53 @@ interface IShowState {
   imageURL: string,
 }
 
+interface IEpisode {
+  seasonNumber : number,
+  episodeNumber : number,
+  summary: string,
+  name: string,
+  imageURL: string,
+  id: number,
+}
+
+interface IRawEpisode {
+  name: string,
+  id: number,
+  season: number,
+  number: number,
+  image: { medium: string},
+  summary: string,
+}
+
+interface IRawSeason {
+  id: number,
+  number: number,
+  premiereDate: string,
+}
+
+interface ISeason {
+  id: number,
+  number: number,
+  numEpisodes: number,
+  premiereDate: string,
+  episodes: IEpisode[],
+}
+
 function App() {
-  const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""}
+  const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
+  const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
+  const defaultEpisode : IEpisode = {id:0, seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
   const [show, setShow] = useState(defaultShow);
- 
+  const [seasons, setSeasons] = useState([defaultSeason]);
+  const [episodes, setEpisodes] = useState([[defaultEpisode]]);
+
   useEffect(() => {
     const showName = "girls" // TODO
-    async function fetchData () {
-      const result = await axios(returnShowEndpoint(showName));
-      console.log('RESULT', result)
-      const fetchedShow = result.data[0].show;
+    
+
+    async function fetchShowData () {
+      const showResult = await axios(returnShowEndpoint(showName));
+      const fetchedShow = showResult.data[0].show;
       const {id, name, summary, premiered, image} = fetchedShow;
       const showState = {
         id,
@@ -38,18 +75,33 @@ function App() {
         imageURL: image.medium,
       }
       setShow(showState);
+      const seasonsResult = await axios(returnSeasonsEndpoint(showState.id));
+      const fetchedSeasons = seasonsResult.data;
+      const seasonIds: number[] = [];
+      const seasons = fetchedSeasons.map((season: IRawSeason) => {
+        seasonIds.push(season.id);
+        return {
+          id: season.id,
+          number: season.number,
+          premiereDate: season.premiereDate,
+        }
+      });
+      setSeasons(seasons);
     }
 
-    fetchData();
+    fetchShowData();
   },[]);
- 
-
-  console.log('SHOW STATE', show)
+  
+  console.log('Show STATE', show)
+  console.log('Seasons STATE', seasons)
+  console.log('Episodes STATE', episodes)
+  const {name, summary, premiereDate, imageURL} = show;
   return (
     <div className="App">
-      <header className="App-header">
-        Show: {show.name}
-      </header>
+      <h1>{name}</h1>
+      <h2>{premiereDate}</h2>
+      <img src={imageURL} alt={`${name} cover`}/>
+      <p>{summary}</p>
     </div>
   );
 }
