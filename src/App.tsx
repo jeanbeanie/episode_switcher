@@ -40,7 +40,8 @@ interface IRawEpisode {
 interface IRawSeason {
   id: number,
   number: number,
-  premiereDate: string,
+    premiereDate: string,
+    episodeOrder: number,
 }
 
 interface ISeason {
@@ -84,6 +85,7 @@ function App() {
           id: season.id,
           number: season.number,
           premiereDate: season.premiereDate,
+          numEpisodes: season.episodeOrder,
         }
       });
       setSeasons(seasons);
@@ -99,9 +101,17 @@ function App() {
   return (
     <div className="App">
       <h1>{name}</h1>
-      <h2>{premiereDate}</h2>
+      <h2>Premiered on {premiereDate}</h2>
       <img src={imageURL} alt={`${name} cover`}/>
       <p>{summary}</p>
+      {
+          seasons.map((season) =>
+            <>
+          <h1>Season {season.number}</h1>
+          <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
+            </>
+        )
+      }
     </div>
   );
 }
