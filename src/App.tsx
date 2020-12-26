@@ -70,7 +70,8 @@ function App() {
   const [seasons, setSeasons] = useState([defaultSeason]);
   const [episodes, setEpisodes] = useState([[defaultEpisode]]);
   const [seasonIsLoaded, setSeasonIsLoaded] = useState(false);
-  
+  const [selectedSeason, setSelectedSeason] = useState(1);
+
   useEffect(() => {
     const episodeState:IEpisode[][] = [];
 
@@ -142,6 +143,7 @@ function App() {
   console.log('Show STATE', show)
   console.log('Seasons STATE', seasons)
   console.log('Episodes STATE', episodes)
+  const findEpisodesIndexBySeason = (seasonNumber: number) => episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
   const {name, summary, premiereDate, imageURL} = show;
   return (
@@ -152,6 +154,21 @@ function App() {
       <img src={imageURL} alt={`${name} cover`}/>
       <p>{summary}</p>
 
+      <div>
+        Replace 
+        <select value={selectedSeason} onChange={(e)=>setSelectedSeason(parseInt(e.target.value))}>
+          {
+            seasons.map((season) => <option value={season.number}>Season {season.number}</option>)
+          }
+        </select>
+        <select>
+          {
+            episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
+          }
+        </select>
+        with <input type="text"/>
+          <button>Replace</button>
+      </div>
       {
         seasons.map((season) => {
           const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
