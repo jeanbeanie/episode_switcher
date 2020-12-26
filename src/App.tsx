@@ -25,7 +25,8 @@ interface IEpisode {
   summary: string,
   name: string,
   imageURL: string,
-  id: number,
+    id: number,
+    premiereDate: string,
 }
 
 interface IRawEpisode {
@@ -35,6 +36,7 @@ interface IRawEpisode {
   number: number,
   image: { medium: string},
   summary: string,
+  airdate: string,
 }
 
 interface IRawSeason {
@@ -53,7 +55,7 @@ interface ISeason {
 }
 const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
-const defaultEpisode : IEpisode = {id:0, seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
+const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
 const showName = "girls" // TODO
 
 function App() {
@@ -101,10 +103,10 @@ function App() {
     async function fetchEpisodesBySeason (seasonId: number) {
       const episodesResult = await axios(returnEpisodesEndpoint(seasonId));
       const fetchedEpisodes = episodesResult.data.map((episode:IRawEpisode): IEpisode => {
-        return { name: episode.name, seasonNumber: episode.season, episodeNumber:episode.number, id: episode.id, summary: episode.summary, imageURL: episode.image.medium  }
+        return { premiereDate: episode.airdate, name: episode.name, seasonNumber: episode.season, episodeNumber:episode.number, id: episode.id, summary: episode.summary, imageURL: episode.image.medium  }
       });
       
-      episodeState.push([fetchedEpisodes])
+      episodeState.push(fetchedEpisodes)
       setEpisodes(episodeState);
     }
 
@@ -125,6 +127,7 @@ function App() {
   console.log('Show STATE', show)
   console.log('Seasons STATE', seasons)
   console.log('Episodes STATE', episodes)
+
   const {name, summary, premiereDate, imageURL} = show;
   return (
     <div className="App">
@@ -135,12 +138,26 @@ function App() {
       <p>{summary}</p>
 
       {
-          seasons.map((season) =>
-            <>
+          seasons.map((season) => {
+            const episodesIndex = episodes.findIndex((ep) => ep[0].seasonNumber === season.number)
+            return (<>
               <h1>Season {season.number}</h1>
               <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
               <hr/>
-            </>
+                { 
+                  episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
+                    return( 
+                      <>
+                      <div>{episode.name}</div>
+                      <div>Season {episode.seasonNumber} | Episode {episode.episodeNumber} | {episode.premiereDate}</div>
+                      <img src={episode.imageURL}/>
+                      <div>{episode.summary}</div>
+                      </>
+                    )
+                  })
+                }
+              </>);
+          }
         )
       }
     </div>
