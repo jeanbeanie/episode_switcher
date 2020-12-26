@@ -2,6 +2,13 @@ import React, {useState, useEffect} from 'react';
 import './App.css';
 import axios from 'axios';
 
+// TODO
+// strip html from raw text
+// add bootstrap
+// make thumbnailWithSummary component
+// add form component for replacing episodes
+// add callback for replacing episodes
+
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
 const returnShowEndpoint = (showName:string) => `${API_ROOT}search/shows?q=${showName}`;
@@ -103,7 +110,15 @@ function App() {
     async function fetchEpisodesBySeason (seasonId: number) {
       const episodesResult = await axios(returnEpisodesEndpoint(seasonId));
       const fetchedEpisodes = episodesResult.data.map((episode:IRawEpisode): IEpisode => {
-        return { premiereDate: episode.airdate, name: episode.name, seasonNumber: episode.season, episodeNumber:episode.number, id: episode.id, summary: episode.summary, imageURL: episode.image.medium  }
+        return { 
+          premiereDate: episode.airdate, 
+          name: episode.name, 
+          seasonNumber: episode.season, 
+          episodeNumber:episode.number, 
+          id: episode.id, 
+          summary: episode.summary, 
+          imageURL: episode.image?.medium,
+        }
       });
       
       episodeState.push(fetchedEpisodes)
@@ -139,7 +154,7 @@ function App() {
 
       {
         seasons.map((season) => {
-          const episodesIndex = episodes.findIndex((ep) => ep[0].seasonNumber === season.number)
+          const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
           return (<>
             <h1>Season {season.number}</h1>
             <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
