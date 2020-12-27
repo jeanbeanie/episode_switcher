@@ -1,12 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import './App.css';
+//import './App.css';
 import axios from 'axios';
+import Navbar from 'react-bootstrap/Navbar';
 
 // TODO
 // strip html from raw text
-// add bootstrap
 // make thumbnailWithSummary component
-// add callback for replacing episodes
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
@@ -89,6 +88,7 @@ function App() {
   const returnSanitizedEpisodes = (episodes: IRawEpisode[]) => {
     return episodes.map((episode): IEpisode => returnSanitizedEpisode(episode));
   }
+  
   useEffect(() => {
     const episodeState:IEpisode[][] = [];
 
@@ -170,7 +170,7 @@ function App() {
   const {name, summary, premiereDate, imageURL} = show;
   return (
     <div className="App">
-
+      <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
       <h1>{name}</h1>
       <h2>Premiered on {premiereDate}</h2>
       <img src={imageURL} alt={`${name} cover`}/>
@@ -215,6 +215,12 @@ function App() {
           }
         )
       }
+      <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+        crossOrigin="anonymous"
+      />
     </div>
   );
 }
