@@ -6,12 +6,12 @@ import axios from 'axios';
 // strip html from raw text
 // add bootstrap
 // make thumbnailWithSummary component
-// add form component for replacing episodes
 // add callback for replacing episodes
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
 const returnShowEndpoint = (showName:string) => `${API_ROOT}search/shows?q=${showName}`;
+const returnShowEpisodesEndpoint = (showName:string) => `${API_ROOT}singlesearch/shows?q=${showName}&embed=episodes`;
 const returnSeasonsEndpoint = (showID:number) => `${API_ROOT}shows/${showID}/seasons`; 
 const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${seasonID}/episodes`;
 
@@ -74,6 +74,21 @@ function App() {
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [replacementShow, setReplacementShow] = useState("");
 
+  const returnSanitizedEpisode = (episode: IRawEpisode): IEpisode => {
+    return { 
+      premiereDate: episode.airdate, 
+      name: episode.name, 
+      seasonNumber: episode.season, 
+      episodeNumber:episode.number, 
+      id: episode.id, 
+      summary: episode.summary, 
+      imageURL: episode.image?.medium,
+    }
+  };
+
+  const returnSanitizedEpisodes = (episodes: IRawEpisode[]) => {
+    return episodes.map((episode): IEpisode => returnSanitizedEpisode(episode));
+  }
   useEffect(() => {
     const episodeState:IEpisode[][] = [];
 
@@ -112,17 +127,8 @@ function App() {
     //
     async function fetchEpisodesBySeason (seasonId: number) {
       const episodesResult = await axios(returnEpisodesEndpoint(seasonId));
-      const fetchedEpisodes = episodesResult.data.map((episode:IRawEpisode): IEpisode => {
-        return { 
-          premiereDate: episode.airdate, 
-          name: episode.name, 
-          seasonNumber: episode.season, 
-          episodeNumber:episode.number, 
-          id: episode.id, 
-          summary: episode.summary, 
-          imageURL: episode.image?.medium,
-        }
-      });
+      const fetchedEpisodes = returnSanitizedEpisodes(episodesResult.data);
+
       
       episodeState.push(fetchedEpisodes)
       setEpisodes(episodeState);
@@ -142,14 +148,23 @@ function App() {
     }
   },[seasonIsLoaded]);
   
-  console.log('Show STATE', show)
-  console.log('Seasons STATE', seasons)
-  console.log('Episodes STATE', episodes)
+  //console.log('Show STATE', show)
+  //console.log('Seasons STATE', seasons)
+  //console.log('Episodes STATE', episodes)
   const findEpisodesIndexBySeason = (seasonNumber: number) => episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    console.log("HANDLE SUBMIT CODE HERE", selectedSeason, selectedEpisode, replacementShow);
+    async function returnReplacementEpisode () {
+      const results = await axios(`${returnShowEpisodesEndpoint(replacementShow)}`);
+      const replacementEpisode = returnSanitizedEpisode(results.data._embedded.episodes.find((episode: IRawEpisode) => {
+        return episode.season === selectedSeason && episode.number === selectedEpisode
+      }));
+      const updatedEpisodes = [...episodes];
+      updatedEpisodes[findEpisodesIndexBySeason(selectedSeason)][selectedEpisode-1] = replacementEpisode
+      setEpisodes(updatedEpisodes);
+    }
+    returnReplacementEpisode();
   }
 
   const {name, summary, premiereDate, imageURL} = show;
