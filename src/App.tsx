@@ -21,6 +21,8 @@ const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", im
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
 const showName = "girls" // TODO
+       
+const strippedString = (originalString: string) => originalString.replace(/(<([^>]+)>)/gi, "");
 
 function App() {
   const [show, setShow] = useState(defaultShow);
@@ -38,7 +40,7 @@ function App() {
       seasonNumber: episode.season, 
       episodeNumber:episode.number, 
       id: episode.id, 
-      summary: episode.summary, 
+      summary: `${strippedString(episode.summary).slice(0,269)}...`, 
       imageURL: episode.image?.medium,
     }
   };
@@ -58,7 +60,7 @@ function App() {
       const showState = {
         id,
         name,
-        summary,
+        summary: `${strippedString(summary).slice(0,699)}...`,
         premiereDate: premiered,
         imageURL: image.medium,
       }
