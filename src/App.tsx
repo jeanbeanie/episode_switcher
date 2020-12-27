@@ -1,7 +1,9 @@
 import React, {useState, useEffect} from 'react';
-//import './App.css';
 import axios from 'axios';
+import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
 
 // TODO
 // strip html from raw text
@@ -55,7 +57,7 @@ interface IRawSeason {
 interface ISeason {
   id: number,
   number: number,
-  numEpisodes: number,
+    numEpisodes: number,
   premiereDate: string,
   episodes: IEpisode[],
 }
@@ -169,12 +171,20 @@ function App() {
 
   const {name, summary, premiereDate, imageURL} = show;
   return (
-    <div className="App">
-      <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
-      <h1>{name}</h1>
-      <h2>Premiered on {premiereDate}</h2>
-      <img src={imageURL} alt={`${name} cover`}/>
-      <p>{summary}</p>
+    <>
+    <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
+    <Container>
+       
+        <Row>
+          <Col xs="3">
+            <img src={imageURL} alt={`${name} cover`}/>
+          </Col>
+          <Col xs="9">
+            <h1>{name}</h1>
+            <h2>Premiered on {premiereDate}</h2>
+            <p>{summary}</p>
+          </Col>
+        </Row>
 
       <form onSubmit={handleSubmit}>
         Replace 
@@ -215,13 +225,14 @@ function App() {
           }
         )
       }
+      </Container>
       <link
         rel="stylesheet"
         href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
         crossOrigin="anonymous"
       />
-    </div>
+    </>
   );
 }
 
