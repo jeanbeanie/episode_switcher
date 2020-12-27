@@ -1,4 +1,9 @@
 import React from 'react';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import Container from 'react-bootstrap/Container';
+import Button from 'react-bootstrap/Button';
+import styled from 'styled-components';
 
 interface IProps {
   submitCallback: (event:any)=>void,
@@ -10,27 +15,35 @@ interface IProps {
   selectedSeason: number,
 }
 
+const StyledSelect = styled.select`padding:0 1rem;margin: 0 1rem;`;
+const StyledInput = styled.input`padding:0 1rem;margin: 0 1rem;`;
+const StyledForm = styled(Form)`margin-top:2rem;margin-bottom:1rem`;
+const StyledButton = styled(Button)`padding-left:2rem !important;padding-right:2rem !important;`;
+
 const ReplaceEpisodeForm = (props: IProps) => {
   const {selectedSeason, submitCallback, seasonChangeCallback, episodeChangeCallback, seasonOptions,
     episodeOptions, showChangeCallback} = props;
 
   return(
-    
-      <form onSubmit={submitCallback}>
+      <Container>
+      <StyledForm onSubmit={submitCallback}>
+        <Row>
         Replace 
-        <select value={selectedSeason} onChange={seasonChangeCallback}>
+        <StyledSelect value={selectedSeason} onChange={seasonChangeCallback}>
           {
             seasonOptions.map((option:JSX.Element) => option)
           }
-        </select>
-        <select onChange={episodeChangeCallback}>
+        </StyledSelect>
+        <StyledSelect onChange={episodeChangeCallback}>
           {
             episodeOptions && episodeOptions.map((option:JSX.Element) => option)
           }
-        </select>
-          with <input type="text" onChange={showChangeCallback}/>
-          <input type="submit" value="Replace"/>
-        </form>
+        </StyledSelect>
+          with <StyledInput type="text" onChange={showChangeCallback}/>
+            <StyledButton type="submit" value="Replace" variant="dark">Replace</StyledButton>
+          </Row>
+            </StyledForm>
+              </Container>
   );
 }
 
