@@ -71,6 +71,8 @@ function App() {
   const [episodes, setEpisodes] = useState([[defaultEpisode]]);
   const [seasonIsLoaded, setSeasonIsLoaded] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(0);
+  const [replacementShow, setReplacementShow] = useState("");
 
   useEffect(() => {
     const episodeState:IEpisode[][] = [];
@@ -145,6 +147,11 @@ function App() {
   console.log('Episodes STATE', episodes)
   const findEpisodesIndexBySeason = (seasonNumber: number) => episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
+  const handleSubmit = (event: any) => {
+    event.preventDefault();
+    console.log("HANDLE SUBMIT CODE HERE", selectedSeason, selectedEpisode, replacementShow);
+  }
+
   const {name, summary, premiereDate, imageURL} = show;
   return (
     <div className="App">
@@ -154,21 +161,22 @@ function App() {
       <img src={imageURL} alt={`${name} cover`}/>
       <p>{summary}</p>
 
-      <div>
+      <form onSubmit={handleSubmit}>
         Replace 
         <select value={selectedSeason} onChange={(e)=>setSelectedSeason(parseInt(e.target.value))}>
           {
             seasons.map((season) => <option value={season.number}>Season {season.number}</option>)
           }
         </select>
-        <select>
-          {
+          <select onChange={(e)=>setSelectedEpisode(parseInt(e.target.value))}>
+            {
+              findEpisodesIndexBySeason(selectedSeason) >= 0 &&
             episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
           }
         </select>
-        with <input type="text"/>
-          <button>Replace</button>
-      </div>
+          with <input type="text" onChange={(e) => setReplacementShow(e.target.value)}/>
+          <input type="submit" value="Replace"/>
+      </form>
       {
         seasons.map((season) => {
           const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
