@@ -4,10 +4,9 @@ import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import ImageTextCard from './ImageTextCard';
 import TitleWithSubTitle from './TitleWithSubTitle';
-
+import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfaces';
 // TODO
 // strip html from raw text
-// make thumbnailWithSummary component
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
@@ -17,50 +16,6 @@ const returnSeasonsEndpoint = (showID:number) => `${API_ROOT}shows/${showID}/sea
 const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${seasonID}/episodes`;
 
 
-// INTERFACES
-//
-interface IShowState {
-  id: number,
-  name: string,
-  summary: string,
-  premiereDate: string,
-  imageURL: string,
-}
-
-interface IEpisode {
-  seasonNumber : number,
-  episodeNumber : number,
-  summary: string,
-  name: string,
-  imageURL: string,
-    id: number,
-    premiereDate: string,
-}
-
-interface IRawEpisode {
-  name: string,
-  id: number,
-  season: number,
-  number: number,
-  image: { medium: string},
-  summary: string,
-  airdate: string,
-}
-
-interface IRawSeason {
-  id: number,
-  number: number,
-    premiereDate: string,
-    episodeOrder: number,
-}
-
-interface ISeason {
-  id: number,
-  number: number,
-    numEpisodes: number,
-  premiereDate: string,
-  episodes: IEpisode[],
-}
 const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
@@ -165,6 +120,8 @@ function App() {
     }
     returnReplacementEpisode();
   }
+
+  /* RENDER */
 
   const {name, summary, premiereDate, imageURL} = show;
   return (
