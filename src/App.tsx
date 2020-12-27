@@ -9,11 +9,15 @@ import ImageTextCard from './ImageTextCard';
 import TitleWithSubTitle from './TitleWithSubTitle';
 import ReplaceEpisodeForm from './ReplaceEpisodeForm';
 import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfaces';
+
 // TODO
 // clean up api fetching logic
 // refresh should serve a random show
 // fix styles
 // fix bug on initial replacement form state
+// error message if show doesnt exist
+// tests
+// fix any types on event handler 'event' param
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
@@ -22,7 +26,7 @@ const returnShowEpisodesEndpoint = (showName:string) => `${API_ROOT}singlesearch
 const returnSeasonsEndpoint = (showID:number) => `${API_ROOT}shows/${showID}/seasons`; 
 const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${seasonID}/episodes`;
 
-
+// Default State Values
 const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
@@ -76,9 +80,7 @@ function App() {
     // SEASONS DETAILS
     const seasonsResult = await axios(returnSeasonsEndpoint(showState.id));
     const fetchedSeasons = seasonsResult.data;
-    const seasonIds: number[] = [];
     const seasons = fetchedSeasons.map((season: IRawSeason) => {
-      seasonIds.push(season.id);
       return {
         id: season.id,
         number: season.number,
@@ -95,12 +97,10 @@ function App() {
     async function fetchEpisodesBySeason (seasonId: number) {
       const episodesResult = await axios(returnEpisodesEndpoint(seasonId));
       const fetchedEpisodes = returnSanitizedEpisodes(episodesResult.data);
-
       
       episodeState.push(fetchedEpisodes)
       setEpisodes(episodeState);
     }
-
 
     const buildEpisodeList = () => {
       return [seasons.map((season: ISeason) => {
@@ -182,29 +182,29 @@ function App() {
 
       {
         seasons.map((season) => {
-          const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
+          const episodesIndex = findEpisodesIndexBySeason(season.number);
           return (<>
             <TitleWithSubTitle
               title={`Season ${season.number}`}
               subTitle={`${season.numEpisodes} episodes | Aired ${season.premiereDate}`}
             />
-              { 
-                episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
-                  return( 
-                    <ImageTextCard
-                      imageURL={episode.imageURL}
-                      imageAlt={`${episode.seasonNumber}-${episode.episodeNumber}-cover`}
-                      title={episode.name}
-                      subTitle={`Season ${episode.seasonNumber} | Episode ${episode.episodeNumber} | ${episode.premiereDate}`}
-                      body={episode.summary}
-                      smallTitle
-                    />
-                  )
-                })
-              }
-            </>);
-          }
-        )
+            { 
+              episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
+                const {episodeNumber, seasonNumber, imageURL, premiereDate, summary} = episode;
+                return( 
+                  <ImageTextCard
+                    imageURL={imageURL}
+                    imageAlt={`${seasonNumber}-${episodeNumber}-cover`}
+                    title={episode.name}
+                    subTitle={`Season ${seasonNumber} | Episode ${episodeNumber} | ${premiereDate}`}
+                    body={summary}
+                    smallTitle
+                  />
+                )
+              })
+            }
+          </>);
+        })
       }
       </Container>
       <link
