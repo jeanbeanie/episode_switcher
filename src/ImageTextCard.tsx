@@ -1,6 +1,7 @@
 import React from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import styled from 'styled-components';
 
 interface IProps {
   imageURL?: string,
@@ -10,10 +11,13 @@ interface IProps {
   body: string,
 }
 
+const StyledRow = styled(Row)`margin-top:1rem`;
+
+
 const ImageTextCard = (props: IProps) => {
   const {imageURL, imageAlt, title, subTitle, body} = props;
   return(
-    <Row>
+    <StyledRow>
       <Col xs="3">
         <img src={imageURL} alt={imageAlt}/>
       </Col>
@@ -22,7 +26,7 @@ const ImageTextCard = (props: IProps) => {
         <p>{subTitle}</p>
         <p>{body}</p>
       </Col>
-    </Row>
+    </StyledRow>
   );
 }
 
