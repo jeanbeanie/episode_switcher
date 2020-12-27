@@ -12,8 +12,8 @@ import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfac
 // TODO
 // clean up api fetching logic
 // refresh should serve a random show
-// search show functionality
 // fix styles
+// fix bug on initial replacement form state
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
@@ -26,7 +26,6 @@ const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${season
 const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
-const showName = "girls" // TODO
        
 const strippedString = (originalString: string) => originalString.replace(/(<([^>]+)>)/gi, "");
 
@@ -38,6 +37,8 @@ function App() {
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [replacementShow, setReplacementShow] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [showName, setShowName] = useState("girls");
 
   const returnSanitizedEpisode = (episode: IRawEpisode): IEpisode => {
     return { 
@@ -46,7 +47,7 @@ function App() {
       seasonNumber: episode.season, 
       episodeNumber:episode.number, 
       id: episode.id, 
-      summary: `${strippedString(episode.summary).slice(0,269)}...`, 
+      summary: episode.summary ? `${strippedString(episode.summary).slice(0,269)}...` : '', 
       imageURL: episode.image?.medium,
     }
   };
@@ -112,12 +113,12 @@ function App() {
     if(seasonIsLoaded){
       buildEpisodeList();
     }
-  },[seasonIsLoaded]);
+  },[showName, seasonIsLoaded]);
   
   const findEpisodesIndexBySeason = (seasonNumber: number) => 
     episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
-  const handleSubmit = (event: any) => {
+  const handleReplaceSubmit = (event: any) => {
     event.preventDefault();
     async function returnReplacementEpisode () {
       const results = await axios(`${returnShowEpisodesEndpoint(replacementShow)}`);
@@ -132,6 +133,13 @@ function App() {
     returnReplacementEpisode();
   }
 
+  const handleSearchSubmit = (event:any) => {
+    event.preventDefault();
+    setSeasonIsLoaded(false);
+    setShowName(searchInput);
+  }
+
+
   /* RENDER */
 
   const {name, summary, premiereDate, imageURL} = show;
@@ -140,9 +148,12 @@ function App() {
     <Navbar bg="dark" variant="dark">
       <Container>
         <Navbar.Brand>Episode Switcher</Navbar.Brand>
-        <Form inline>
-          <FormControl type="text" placeholder="Enter a TV Show" />
-          <Button variant="secondary">Search</Button>
+        <Form inline onSubmit={handleSearchSubmit}>
+          <FormControl onChange={(e)=>setSearchInput(e.target.value)} 
+            type="text" 
+            placeholder="Enter a TV Show" 
+          />
+            <Button  variant="secondary">Search</Button>
         </Form> 
       </Container>
     </Navbar>
@@ -156,7 +167,7 @@ function App() {
       />
 
       <ReplaceEpisodeForm
-        submitCallback={handleSubmit}
+        submitCallback={handleReplaceSubmit}
         seasonChangeCallback={(e)=>setSelectedSeason(parseInt(e?.target?.value))}
         episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
         showChangeCallback={(e) => setReplacementShow(e.target.value)}
