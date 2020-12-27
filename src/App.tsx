@@ -4,6 +4,7 @@ import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import ImageTextCard from './ImageTextCard';
 import TitleWithSubTitle from './TitleWithSubTitle';
+import ReplaceEpisodeForm from './ReplaceEpisodeForm';
 import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfaces';
 // TODO
 // strip html from raw text
@@ -105,15 +106,17 @@ function App() {
     }
   },[seasonIsLoaded]);
   
-  const findEpisodesIndexBySeason = (seasonNumber: number) => episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
+  const findEpisodesIndexBySeason = (seasonNumber: number) => 
+    episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
     async function returnReplacementEpisode () {
       const results = await axios(`${returnShowEpisodesEndpoint(replacementShow)}`);
-      const replacementEpisode = returnSanitizedEpisode(results.data._embedded.episodes.find((episode: IRawEpisode) => {
+      const replacementEpisode = 
+        returnSanitizedEpisode(results.data._embedded.episodes.find((episode: IRawEpisode) => {
         return episode.season === selectedSeason && episode.number === selectedEpisode
-      }));
+        }));
       const updatedEpisodes = [...episodes];
       updatedEpisodes[findEpisodesIndexBySeason(selectedSeason)][selectedEpisode-1] = replacementEpisode
       setEpisodes(updatedEpisodes);
@@ -128,7 +131,6 @@ function App() {
     <>
     <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
     <Container>
-       
       <ImageTextCard
         imageURL={imageURL}
         imageAlt={`${name} cover`}
@@ -136,22 +138,21 @@ function App() {
         subTitle={`Premiered on ${premiereDate}`}
         body={summary}
       />
-      <form onSubmit={handleSubmit}>
-        Replace 
-        <select value={selectedSeason} onChange={(e)=>setSelectedSeason(parseInt(e.target.value))}>
-          {
-            seasons.map((season) => <option value={season.number}>Season {season.number}</option>)
-          }
-        </select>
-          <select onChange={(e)=>setSelectedEpisode(parseInt(e.target.value))}>
-            {
-              findEpisodesIndexBySeason(selectedSeason) >= 0 &&
+
+      <ReplaceEpisodeForm
+        submitCallback={handleSubmit}
+        seasonChangeCallback={(e)=>setSelectedSeason(parseInt(e?.target?.value))}
+        episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
+        showChangeCallback={(e) => setReplacementShow(e.target.value)}
+        selectedSeason={selectedSeason}
+        seasonOptions={seasons.map((season) => <option value={season.number}>Season {season.number}</option>)}
+        episodeOptions={
+              findEpisodesIndexBySeason(selectedSeason) >= 0 ?
             episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
-          }
-        </select>
-          with <input type="text" onChange={(e) => setReplacementShow(e.target.value)}/>
-          <input type="submit" value="Replace"/>
-      </form>
+            : undefined
+        }
+      />
+
       {
         seasons.map((season) => {
           const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
