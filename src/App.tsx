@@ -2,12 +2,18 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
+import Form from 'react-bootstrap/Form';
+import FormControl from 'react-bootstrap/FormControl';
+import Button from 'react-bootstrap/Button';
 import ImageTextCard from './ImageTextCard';
 import TitleWithSubTitle from './TitleWithSubTitle';
 import ReplaceEpisodeForm from './ReplaceEpisodeForm';
 import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfaces';
 // TODO
-// strip html from raw text
+// clean up api fetching logic
+// refresh should serve a random show
+// search show functionality
+// fix styles
 
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
@@ -131,7 +137,15 @@ function App() {
   const {name, summary, premiereDate, imageURL} = show;
   return (
     <>
-    <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
+    <Navbar bg="dark" variant="dark">
+      <Container>
+        <Navbar.Brand>Episode Switcher</Navbar.Brand>
+        <Form inline>
+          <FormControl type="text" placeholder="Enter a TV Show" />
+          <Button variant="secondary">Search</Button>
+        </Form> 
+      </Container>
+    </Navbar>
     <Container>
       <ImageTextCard
         imageURL={imageURL}
