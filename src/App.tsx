@@ -3,6 +3,7 @@ import axios from 'axios';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import ImageTextCard from './ImageTextCard';
+import TitleWithSubTitle from './TitleWithSubTitle';
 
 // TODO
 // strip html from raw text
@@ -198,9 +199,10 @@ function App() {
         seasons.map((season) => {
           const episodesIndex = episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === season.number)
           return (<>
-            <h1>Season {season.number}</h1>
-            <h2>{season.numEpisodes} episodes | Aired {season.premiereDate}</h2>
-            <hr/>
+            <TitleWithSubTitle
+              title={`Season ${season.number}`}
+              subTitle={`${season.numEpisodes} episodes | Aired ${season.premiereDate}`}
+            />
               { 
                 episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
                   return( 
