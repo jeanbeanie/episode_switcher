@@ -5,6 +5,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import ImageTextCard from './ImageTextCard';
 import TitleWithSubTitle from './TitleWithSubTitle';
 import ReplaceEpisodeForm from './ReplaceEpisodeForm';
@@ -12,10 +13,8 @@ import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfac
 
 // TODO
 // clean up api fetching logic
-// refresh should serve a random show
 // fix styles
 // fix bug on initial replacement form state
-// error message if show doesnt exist
 // tests
 // fix any types on event handler 'event' param
 
@@ -25,6 +24,7 @@ const returnShowEndpoint = (showName:string) => `${API_ROOT}search/shows?q=${sho
 const returnShowEpisodesEndpoint = (showName:string) => `${API_ROOT}singlesearch/shows?q=${showName}&embed=episodes`;
 const returnSeasonsEndpoint = (showID:number) => `${API_ROOT}shows/${showID}/seasons`; 
 const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${seasonID}/episodes`;
+const returnShowsEndpoint = (pageNum:number) => `${API_ROOT}shows?page=${pageNum}`
 
 // Default State Values
 const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
@@ -32,8 +32,24 @@ const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:""
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
        
 const strippedString = (originalString: string) => originalString.replace(/(<([^>]+)>)/gi, "");
+const returnRandomShowName = () => {
+  async function fetchRandomShowName(pageNum: number, totalPages: number){
+    const result = await axios(returnShowsEndpoint(pageNum))
+    const randomResultIndex = Math.floor(Math.random() * Math.floor(totalPages-1));
+    const showName = result.data[randomResultIndex] ? result.data[randomResultIndex].name : 'girls';
+    return showName;
+  }
+
+  const TOTAL_API_PAGES = 210; // 210 pages, 250 results per page
+  const RESULTS_PER_PAGE = 250;
+  const randomPage = Math.floor(Math.random() * Math.floor(TOTAL_API_PAGES-1));
+  return fetchRandomShowName(randomPage, RESULTS_PER_PAGE);
+  // setShowName(fetchShows(randomPage));
+};
 
 function App() {
+
+  const [dataIsLoaded, setDataIsLoaded] = useState(false);
   const [show, setShow] = useState(defaultShow);
   const [seasons, setSeasons] = useState([defaultSeason]);
   const [episodes, setEpisodes] = useState([[defaultEpisode]]);
@@ -42,7 +58,8 @@ function App() {
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [replacementShow, setReplacementShow] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [showName, setShowName] = useState("girls");
+  const [showName, setShowName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const returnSanitizedEpisode = (episode: IRawEpisode): IEpisode => {
     return { 
@@ -52,7 +69,7 @@ function App() {
       episodeNumber:episode.number, 
       id: episode.id, 
       summary: episode.summary ? `${strippedString(episode.summary).slice(0,269)}...` : '', 
-      imageURL: episode.image?.medium,
+      imageURL: episode.image?.medium ? episode.image.medium : '',
     }
   };
 
@@ -65,15 +82,29 @@ function App() {
 
     // SINGLE SHOW DETAILS
     async function fetchShowData () {
+      const randomShowName = await returnRandomShowName();
+      console.log("showName", showName)
+      if(!showName){
+        setShowName(randomShowName);
+        return
+      }
       const showResult = await axios(returnShowEndpoint(showName));
-      const fetchedShow = showResult.data[0].show;
+      console.log('showResult', showResult)
+      const fetchedData = showResult.data;
+      if(!fetchedData || !fetchedData[0] || !fetchedData[0].show){
+        setErrorMessage(`There is no show matching '${searchInput}'.`);
+        return;
+      }
+
+      const fetchedShow = fetchedData[0].show;
+
       const {id, name, summary, premiered, image} = fetchedShow;
       const showState = {
         id,
         name,
-        summary: `${strippedString(summary).slice(0,699)}...`,
+        summary: summary ? `${strippedString(summary).slice(0,699)}...` : '',
         premiereDate: premiered,
-        imageURL: image.medium,
+        imageURL: image?.medium,
       }
       setShow(showState);
 
@@ -112,6 +143,7 @@ function App() {
     fetchShowData();
     if(seasonIsLoaded){
       buildEpisodeList();
+      setDataIsLoaded(true);
     }
   },[showName, seasonIsLoaded]);
   
@@ -130,11 +162,13 @@ function App() {
       updatedEpisodes[findEpisodesIndexBySeason(selectedSeason)][selectedEpisode-1] = replacementEpisode
       setEpisodes(updatedEpisodes);
     }
+    setErrorMessage("");
     returnReplacementEpisode();
   }
 
   const handleSearchSubmit = (event:any) => {
     event.preventDefault();
+    setErrorMessage("");
     setSeasonIsLoaded(false);
     setShowName(searchInput);
   }
@@ -143,6 +177,7 @@ function App() {
   /* RENDER */
 
   const {name, summary, premiereDate, imageURL} = show;
+  if(dataIsLoaded){
   return (
     <>
     <Navbar bg="dark" variant="dark">
@@ -153,16 +188,16 @@ function App() {
             type="text" 
             placeholder="Enter a TV Show" 
           />
-            <Button  variant="secondary">Search</Button>
+            <Button onClick={handleSearchSubmit} variant="secondary">Search</Button>
         </Form> 
       </Container>
-    </Navbar>
+        </Navbar>
     <Container>
       <ImageTextCard
         imageURL={imageURL}
         imageAlt={`${name} cover`}
         title={name}
-        subTitle={`Premiered on ${premiereDate}`}
+        subTitle={premiereDate ? `Premiered on ${premiereDate}` : 'In Development'}
         body={summary}
       />
 
@@ -180,13 +215,17 @@ function App() {
         }
       />
 
+      {errorMessage ? <Alert variant={"danger"}>{errorMessage}</Alert> : null}
       {
         seasons.map((season) => {
           const episodesIndex = findEpisodesIndexBySeason(season.number);
+          const numEpisodesString = season.numEpisodes ? 
+            `${season.numEpisodes} episodes | ` : episodes[episodesIndex] ? 
+            `${episodes[episodesIndex].length} episodes | ` : '';
           return (<>
             <TitleWithSubTitle
               title={`Season ${season.number}`}
-              subTitle={`${season.numEpisodes} episodes | Aired ${season.premiereDate}`}
+              subTitle={`${numEpisodesString} ${season.premiereDate ? season.premiereDate : ''}`}
             />
             { 
               episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
@@ -196,7 +235,10 @@ function App() {
                     imageURL={imageURL}
                     imageAlt={`${seasonNumber}-${episodeNumber}-cover`}
                     title={episode.name}
-                    subTitle={`Season ${seasonNumber} | Episode ${episodeNumber} | ${premiereDate}`}
+                    subTitle={
+                      `Season ${seasonNumber} | 
+                      ${episodeNumber ? `Episode ${episodeNumber} | ` : ''}
+                      ${premiereDate}`}
                     body={summary}
                     smallTitle
                   />
@@ -214,7 +256,8 @@ function App() {
         crossOrigin="anonymous"
       />
     </>
-  );
+      );
+  } else return <></>
 }
 
 export default App;

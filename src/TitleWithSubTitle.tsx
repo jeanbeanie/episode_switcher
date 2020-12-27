@@ -6,12 +6,13 @@ interface IProps {
   subTitle: string,
 }
 const StyledSubTitle = styled.p`opacity:.5;`;
+const StyledTitle = styled.h3`margin-top:2rem;`;
 
 const TitleWithSubTitle = (props:IProps) => {
   const {title, subTitle} = props;
   return(
     <>
-    <h3>{title}</h3>
+    <StyledTitle>{title}</StyledTitle>
     <StyledSubTitle>{subTitle}</StyledSubTitle>
     <hr/>
     </>
