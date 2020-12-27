@@ -2,8 +2,7 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
+import ImageTextCard from './ImageTextCard';
 
 // TODO
 // strip html from raw text
@@ -150,9 +149,6 @@ function App() {
     }
   },[seasonIsLoaded]);
   
-  //console.log('Show STATE', show)
-  //console.log('Seasons STATE', seasons)
-  //console.log('Episodes STATE', episodes)
   const findEpisodesIndexBySeason = (seasonNumber: number) => episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
   const handleSubmit = (event: any) => {
@@ -175,17 +171,13 @@ function App() {
     <Navbar bg="dark" variant="dark"><Navbar.Brand>Episode Switcher</Navbar.Brand></Navbar>
     <Container>
        
-        <Row>
-          <Col xs="3">
-            <img src={imageURL} alt={`${name} cover`}/>
-          </Col>
-          <Col xs="9">
-            <h1>{name}</h1>
-            <h2>Premiered on {premiereDate}</h2>
-            <p>{summary}</p>
-          </Col>
-        </Row>
-
+      <ImageTextCard
+        imageURL={imageURL}
+        imageAlt={`${name} cover`}
+        title={name}
+        subTitle={`Premiered on ${premiereDate}`}
+        body={summary}
+      />
       <form onSubmit={handleSubmit}>
         Replace 
         <select value={selectedSeason} onChange={(e)=>setSelectedSeason(parseInt(e.target.value))}>
@@ -212,12 +204,13 @@ function App() {
               { 
                 episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
                   return( 
-                    <>
-                    <div>{episode.name}</div>
-                    <div>Season {episode.seasonNumber} | Episode {episode.episodeNumber} | {episode.premiereDate}</div>
-                    <img src={episode.imageURL} alt={`${episode.seasonNumber}-${episode.episodeNumber}-cover`}/>
-                    <div>{episode.summary}</div>
-                    </>
+                    <ImageTextCard
+                      imageURL={episode.imageURL}
+                      imageAlt={`${episode.seasonNumber}-${episode.episodeNumber}-cover`}
+                      title={episode.name}
+                      subTitle={`Season ${episode.seasonNumber} | Episode ${episode.episodeNumber} | ${episode.premiereDate}`}
+                      body={episode.summary}
+                    />
                   )
                 })
               }
