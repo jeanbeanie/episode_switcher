@@ -9,21 +9,26 @@ interface IProps {
   title: string,
   subTitle: string,
   body: string,
+  smallTitle?:boolean,
 }
 
 const StyledRow = styled(Row)`margin-top:1rem`;
-
+const SubTitle = styled.p`opacity:.5;`;
+const StyledImage = styled.img`max-width:100%;`;
 
 const ImageTextCard = (props: IProps) => {
-  const {imageURL, imageAlt, title, subTitle, body} = props;
+  const {smallTitle, imageURL, imageAlt, title, subTitle, body} = props;
   return(
     <StyledRow>
       <Col xs="3">
-        <img src={imageURL} alt={imageAlt}/>
+        <StyledImage src={imageURL} alt={imageAlt}/>
       </Col>
       <Col xs="9">
-        <h3>{title}</h3>
-        <p>{subTitle}</p>
+        {
+          smallTitle ?
+          <h5>{title}</h5> : <h2>{title}</h2>
+        }
+        <SubTitle>{subTitle}</SubTitle>
         <p>{body}</p>
       </Col>
     </StyledRow>

@@ -210,6 +210,7 @@ function App() {
                       title={episode.name}
                       subTitle={`Season ${episode.seasonNumber} | Episode ${episode.episodeNumber} | ${episode.premiereDate}`}
                       body={episode.summary}
+                      smallTitle
                     />
                   )
                 })
