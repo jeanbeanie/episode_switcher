@@ -20,7 +20,7 @@ const StyledInput = styled.input`padding:0 1rem;margin: 0 1rem;`;
 const StyledForm = styled(Form)`margin-top:2rem;margin-bottom:1rem`;
 const StyledButton = styled(Button)`padding-left:2rem !important;padding-right:2rem !important;`;
 
-const ReplaceEpisodeForm = (props: IProps) => {
+const ReplaceEpisodeForm = (props: IProps):JSX.Element => {
   const {selectedSeason, submitCallback, seasonChangeCallback, episodeChangeCallback, seasonOptions,
     episodeOptions, showChangeCallback} = props;
 

@@ -41,7 +41,7 @@ const returnRandomShowName = () => {
   // setShowName(fetchShows(randomPage));
 };
 
-function App() {
+function App():JSX.Element {
 
   const [dataIsLoaded, setDataIsLoaded] = useState(false);
   const [show, setShow] = useState(defaultShow);
@@ -201,10 +201,10 @@ function App() {
         episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
         showChangeCallback={(e) => setReplacementShow(e.target.value)}
         selectedSeason={selectedSeason}
-        seasonOptions={seasons.map((season) => <option value={season.number}>Season {season.number}</option>)}
+        seasonOptions={seasons.map((season) => <option key={`season-${season.number}`} value={season.number}>Season {season.number}</option>)}
         episodeOptions={
               findEpisodesIndexBySeason(selectedSeason) >= 0 ?
-            episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
+            episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option key={`ep-${episode.episodeNumber}`} value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
             : undefined
         }
       />
@@ -234,6 +234,7 @@ function App() {
                       ${episodeNumber ? `Episode ${episodeNumber} | ` : ''}
                       ${premiereDate}`}
                     body={summary}
+                    key={`${seasonNumber}-${episodeNumber}`}
                     smallTitle
                   />
                 )

@@ -8,7 +8,7 @@ interface IProps {
 const StyledSubTitle = styled.p`opacity:.5;`;
 const StyledTitle = styled.h3`margin-top:2rem;`;
 
-const TitleWithSubTitle = (props:IProps) => {
+const TitleWithSubTitle = (props:IProps):JSX.Element => {
   const {title, subTitle} = props;
   return(
     <>

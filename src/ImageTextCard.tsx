@@ -25,7 +25,7 @@ const ImagePlaceholder = styled.div`
 `;
 
 
-const ImageTextCard = (props: IProps) => {
+const ImageTextCard = (props: IProps):JSX.Element => {
   const {smallTitle, imageURL, imageAlt, title, subTitle, body} = props;
   return(
     <StyledRow>
