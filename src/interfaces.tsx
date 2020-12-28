@@ -7,6 +7,7 @@ export interface IShowState {
   summary: string,
   premiereDate: string,
   imageURL: string,
+  genre: string,
 }
 
 export interface IEpisode {

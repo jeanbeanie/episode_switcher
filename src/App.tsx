@@ -21,7 +21,7 @@ const returnEpisodesEndpoint = (seasonID:number) => `${API_ROOT}seasons/${season
 const returnShowsEndpoint = (pageNum:number) => `${API_ROOT}shows?page=${pageNum}`
 
 // Default State Values
-const defaultShow : IShowState = {id:0, name:"", summary:"", premiereDate:"", imageURL:""};
+const defaultShow : IShowState = {id:0, genre:"", name:"", summary:"", premiereDate:"", imageURL:""};
 const defaultSeason : ISeason = {id:0, number:1,  numEpisodes:0, premiereDate:"", episodes:[]};
 const defaultEpisode : IEpisode = {id:0, premiereDate:"", seasonNumber:1, episodeNumber:1, summary:"", name:"", imageURL:""};
        
@@ -77,13 +77,11 @@ function App():JSX.Element {
     // SINGLE SHOW DETAILS
     async function fetchShowData () {
       const randomShowName = await returnRandomShowName();
-      console.log("showName", showName)
       if(!showName){
         setShowName(randomShowName);
-        return
+        return;
       }
       const showResult = await axios(returnShowEndpoint(showName));
-      console.log('showResult', showResult)
       const fetchedData = showResult.data;
       if(!fetchedData || !fetchedData[0] || !fetchedData[0].show){
         setErrorMessage(`There is no show matching '${searchInput}'.`);
@@ -92,10 +90,11 @@ function App():JSX.Element {
 
       const fetchedShow = fetchedData[0].show;
 
-      const {id, name, summary, premiered, image} = fetchedShow;
+      const {id, genres, name, summary, premiered, image} = fetchedShow;
       const showState = {
         id,
         name,
+        genre: genres ? genres[0] : '',
         summary: summary ? `${strippedString(summary).slice(0,699)}...` : '',
         premiereDate: moment(premiered).format('MMM. D, YYYY'),
         imageURL: image?.medium,
@@ -109,7 +108,7 @@ function App():JSX.Element {
       return {
         id: season.id,
         number: season.number,
-        premiereDate: season.premiereDate,
+        premiereDate: moment(season.premiereDate).format('MMM. D, YYYY'),
         numEpisodes: season.episodeOrder,
       }
     });
@@ -170,88 +169,91 @@ function App():JSX.Element {
 
   /* RENDER */
 
-  const {name, summary, premiereDate, imageURL} = show;
+  const {name, genre, summary, premiereDate, imageURL} = show;
   if(dataIsLoaded){
-  return (
-    <>
-    <Navbar bg="dark" variant="dark">
-      <Container>
-        <Navbar.Brand>Episode Switcher</Navbar.Brand>
-        <Form inline onSubmit={handleSearchSubmit}>
-          <FormControl onChange={(e)=>setSearchInput(e.target.value)} 
-            type="text" 
-            placeholder="Enter a TV Show" 
-          />
-            <Button onClick={handleSearchSubmit} variant="secondary">Search</Button>
-        </Form> 
-      </Container>
-        </Navbar>
-    <Container>
-      <ImageTextCard
-        imageURL={imageURL}
-        imageAlt={`${name} cover`}
-        title={name}
-        subTitle={premiereDate ? `Premiered on ${premiereDate}` : 'In Development'}
-        body={summary}
-      />
-
-      <ReplaceEpisodeForm
-        submitCallback={handleReplaceSubmit}
-        seasonChangeCallback={(e)=>setSelectedSeason(parseInt(e?.target?.value))}
-        episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
-        showChangeCallback={(e) => setReplacementShow(e.target.value)}
-        selectedSeason={selectedSeason}
-        seasonOptions={seasons.map((season) => <option key={`season-${season.number}`} value={season.number}>Season {season.number}</option>)}
-        episodeOptions={
-              findEpisodesIndexBySeason(selectedSeason) >= 0 ?
-            episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option key={`ep-${episode.episodeNumber}`} value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
-            : undefined
-        }
-      />
-
-      {errorMessage ? <Alert variant={"danger"}>{errorMessage}</Alert> : null}
-      {
-        seasons.map((season) => {
-          const episodesIndex = findEpisodesIndexBySeason(season.number);
-          const numEpisodesString = season.numEpisodes ? 
-            `${season.numEpisodes} episodes | ` : episodes[episodesIndex] ? 
-            `${episodes[episodesIndex].length} episodes | ` : '';
-          return (<>
-            <TitleWithSubTitle
-              title={`Season ${season.number}`}
-              subTitle={`${numEpisodesString} ${season.premiereDate ? season.premiereDate : ''}`}
+    return (
+      <>
+      <Navbar bg="dark" variant="dark">
+        <Container>
+          <Navbar.Brand>Episode Switcher</Navbar.Brand>
+          <Form inline onSubmit={handleSearchSubmit}>
+            <FormControl onChange={(e)=>setSearchInput(e.target.value)} 
+              type="text" 
+              placeholder="Enter a TV Show" 
             />
-            { 
-              episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
-                const {episodeNumber, seasonNumber, imageURL, premiereDate, summary} = episode;
-                return( 
-                  <ImageTextCard
-                    imageURL={imageURL}
-                    imageAlt={`${seasonNumber}-${episodeNumber}-cover`}
-                    title={episode.name}
-                    subTitle={
-                      `Season ${seasonNumber} | 
-                      ${episodeNumber ? `Episode ${episodeNumber} | ` : ''}
-                      ${premiereDate}`}
-                    body={summary}
-                    key={`${seasonNumber}-${episodeNumber}`}
-                    smallTitle
-                  />
-                )
-              })
-            }
-          </>);
-        })
-      }
-      </Container>
-      <link
-        rel="stylesheet"
-        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
-        crossOrigin="anonymous"
-      />
-    </>
-      );
+              <Button onClick={handleSearchSubmit} variant="secondary">Search</Button>
+          </Form> 
+        </Container>
+          </Navbar>
+      <Container>
+        <ImageTextCard
+          imageURL={imageURL}
+          imageAlt={`${name} cover`}
+          title={name}
+          subTitle={`
+            ${genre ? `${genre} | ` : ''}
+            ${premiereDate ? `Premiered on ${premiereDate}` : 'In Development'}
+          `}
+          body={summary}
+        />
+
+        <ReplaceEpisodeForm
+          submitCallback={handleReplaceSubmit}
+          seasonChangeCallback={(e)=>setSelectedSeason(parseInt(e?.target?.value))}
+          episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
+          showChangeCallback={(e) => setReplacementShow(e.target.value)}
+          selectedSeason={selectedSeason}
+          seasonOptions={seasons.map((season) => <option key={`season-${season.number}`} value={season.number}>Season {season.number}</option>)}
+          episodeOptions={
+              findEpisodesIndexBySeason(selectedSeason) >= 0 ?
+              episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option key={`ep-${episode.episodeNumber}`} value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
+              : undefined
+          }
+        />
+
+        {errorMessage ? <Alert variant={"danger"}>{errorMessage}</Alert> : null}
+        {
+          seasons.map((season) => {
+            const episodesIndex = findEpisodesIndexBySeason(season.number);
+            const numEpisodesString = season.numEpisodes ? 
+              `${season.numEpisodes} episodes | ` : episodes[episodesIndex] ? 
+              `${episodes[episodesIndex].length} episodes | ` : '';
+            return (<>
+              <TitleWithSubTitle
+                title={`Season ${season.number}`}
+                subTitle={`${numEpisodesString} ${season.premiereDate ? `Aired ${season.premiereDate}` : ''}`}
+              />
+              { 
+                episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
+                  const {episodeNumber, seasonNumber, imageURL, premiereDate, summary} = episode;
+                  return( 
+                    <ImageTextCard
+                      imageURL={imageURL}
+                      imageAlt={`${seasonNumber}-${episodeNumber}-cover`}
+                      title={episode.name}
+                      subTitle={
+                        `Season ${seasonNumber} | 
+                        ${episodeNumber ? `Episode ${episodeNumber} | ` : ''}
+                        ${premiereDate}`}
+                      body={summary}
+                      key={`${seasonNumber}-${episodeNumber}`}
+                      smallTitle
+                    />
+                  )
+                })
+              }
+            </>);
+          })
+        }
+        </Container>
+        <link
+          rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+          crossOrigin="anonymous"
+        />
+      </>
+    );
   } else return <></>
 }
 
