@@ -12,12 +12,6 @@ import TitleWithSubTitle from './TitleWithSubTitle';
 import ReplaceEpisodeForm from './ReplaceEpisodeForm';
 import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfaces';
 
-// TODO
-// clean up api fetching logic
-// fix styles, center NA, vertical align replace form text
-// tests
-// fix any types on event handler 'event' param
-
 // API ENDPOINTS
 const API_ROOT = 'http://api.tvmaze.com/';
 const returnShowEndpoint = (showName:string) => `${API_ROOT}search/shows?q=${showName}`;
