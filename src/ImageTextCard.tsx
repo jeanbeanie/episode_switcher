@@ -15,7 +15,14 @@ interface IProps {
 const StyledRow = styled(Row)`margin-top:1rem`;
 const SubTitle = styled.p`opacity:.5;`;
 const StyledImage = styled.img`max-width:100%;`;
-const ImagePlaceholder = styled.div`background-color:grey; height:100%;color:white;text-align:center;font-size:3rem;`;
+const ImagePlaceholder = styled.div`
+  background-color:grey; 
+  height:100%;
+  min-height: 7rem;
+  color:white;
+  text-align:center;
+  font-size:3rem;
+`;
 
 
 const ImageTextCard = (props: IProps) => {

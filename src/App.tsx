@@ -13,8 +13,9 @@ import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfac
 
 // TODO
 // clean up api fetching logic
-// fix styles
+// fix styles, center NA, vertical align replace form text
 // fix bug on initial replacement form state
+// use momentjs for time styling
 // tests
 // fix any types on event handler 'event' param
 
@@ -55,7 +56,7 @@ function App() {
   const [episodes, setEpisodes] = useState([[defaultEpisode]]);
   const [seasonIsLoaded, setSeasonIsLoaded] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState(1);
-  const [selectedEpisode, setSelectedEpisode] = useState(0);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
   const [replacementShow, setReplacementShow] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [showName, setShowName] = useState("");
