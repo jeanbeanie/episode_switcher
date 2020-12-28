@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Form from 'react-bootstrap/Form';
@@ -14,8 +15,6 @@ import {IShowState, ISeason, IEpisode, IRawEpisode, IRawSeason} from './interfac
 // TODO
 // clean up api fetching logic
 // fix styles, center NA, vertical align replace form text
-// fix bug on initial replacement form state
-// use momentjs for time styling
 // tests
 // fix any types on event handler 'event' param
 
@@ -64,7 +63,7 @@ function App() {
 
   const returnSanitizedEpisode = (episode: IRawEpisode): IEpisode => {
     return { 
-      premiereDate: episode.airdate, 
+      premiereDate: moment(episode.airdate).format('MMM. D, YYYY'), 
       name: episode.name, 
       seasonNumber: episode.season, 
       episodeNumber:episode.number, 
@@ -104,7 +103,7 @@ function App() {
         id,
         name,
         summary: summary ? `${strippedString(summary).slice(0,699)}...` : '',
-        premiereDate: premiered,
+        premiereDate: moment(premiered).format('MMM. D, YYYY'),
         imageURL: image?.medium,
       }
       setShow(showState);
