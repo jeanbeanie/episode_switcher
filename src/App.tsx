@@ -147,13 +147,17 @@ function App():JSX.Element {
     event.preventDefault();
     async function returnReplacementEpisode () {
       const results = await axios(`${returnShowEpisodesEndpoint(replacementShow)}`);
-      const replacementEpisode = 
-        returnSanitizedEpisode(results.data._embedded.episodes.find((episode: IRawEpisode) => {
+      const rawEpisode = results.data._embedded.episodes.find((episode: IRawEpisode) => {
         return episode.season === selectedSeason && episode.number === selectedEpisode
-        }));
+        });
+      const replacementEpisode = rawEpisode ? returnSanitizedEpisode(rawEpisode) : null;
+      if(replacementEpisode){
       const updatedEpisodes = [...episodes];
       updatedEpisodes[findEpisodesIndexBySeason(selectedSeason)][selectedEpisode-1] = replacementEpisode
-      setEpisodes(updatedEpisodes);
+        setEpisodes(updatedEpisodes);
+      } else {
+        setErrorMessage(`The show '${replacementShow}' does not have a Season ${selectedSeason} Episode ${selectedEpisode}.`);
+      }
     }
     setErrorMessage("");
     returnReplacementEpisode();
@@ -203,7 +207,9 @@ function App():JSX.Element {
           episodeChangeCallback={(e)=>setSelectedEpisode(parseInt(e.target.value))}
           showChangeCallback={(e) => setReplacementShow(e.target.value)}
           selectedSeason={selectedSeason}
-          seasonOptions={seasons.map((season) => <option key={`season-${season.number}`} value={season.number}>Season {season.number}</option>)}
+          seasonOptions={seasons.map((season) => 
+            <option key={`season-${season.number}`} value={season.number}>Season {season.number}</option>
+          )}
           episodeOptions={
               findEpisodesIndexBySeason(selectedSeason) >= 0 ?
               episodes[findEpisodesIndexBySeason(selectedSeason)].map((episode) => <option key={`ep-${episode.episodeNumber}`} value={episode.episodeNumber}>Episode {episode.episodeNumber}</option>)
@@ -222,9 +228,10 @@ function App():JSX.Element {
               <TitleWithSubTitle
                 title={`Season ${season.number}`}
                 subTitle={`${numEpisodesString} ${season.premiereDate ? `Aired ${season.premiereDate}` : ''}`}
+                key={`season-title-${season.number}`}
               />
               { 
-                episodesIndex >= 0 && episodes[episodesIndex].map((episode) => {
+                episodesIndex >= 0 && episodes[episodesIndex].map((episode, index) => {
                   const {episodeNumber, seasonNumber, imageURL, premiereDate, summary} = episode;
                   return( 
                     <ImageTextCard
@@ -236,7 +243,7 @@ function App():JSX.Element {
                         ${episodeNumber ? `Episode ${episodeNumber} | ` : ''}
                         ${premiereDate}`}
                       body={summary}
-                      key={`${seasonNumber}-${episodeNumber}`}
+                      key={`${seasonNumber}-${episodeNumber}-${index}`}
                       smallTitle
                     />
                   )
