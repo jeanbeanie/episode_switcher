@@ -143,7 +143,7 @@ function App():JSX.Element {
   const findEpisodesIndexBySeason = (seasonNumber: number) => 
     episodes.findIndex((ep) => ep[0] && ep[0].seasonNumber === seasonNumber)
 
-  const handleReplaceSubmit = (event: any) => {
+  const handleReplaceSubmit = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     async function returnReplacementEpisode () {
       const results = await axios(`${returnShowEpisodesEndpoint(replacementShow)}`);
@@ -163,7 +163,7 @@ function App():JSX.Element {
     returnReplacementEpisode();
   }
 
-  const handleSearchSubmit = (event:any) => {
+  const handleSearchSubmit = (event:React.FormEvent<HTMLElement>) => {
     event.preventDefault();
     setErrorMessage("");
     setSeasonIsLoaded(false);
